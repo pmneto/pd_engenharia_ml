@@ -1,0 +1,12 @@
+from kedro.pipeline import Pipeline, node, pipeline
+from .nodes import train_and_save_models
+
+def create_pipeline(**kwargs) -> Pipeline:
+    return pipeline([
+        node(
+            func=train_and_save_models,
+            inputs={
+                "data": "base_train",               # dataset com target já incluso
+                "session_id": "params:session_id"   # você define isso no parameters.yml
+            },
+            outputs="best_model",  # Só retornamos o class_

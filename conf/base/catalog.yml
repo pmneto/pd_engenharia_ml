@@ -9,7 +9,12 @@ kobe_shots:
   filepath: data/01_raw/dataset_kobe_dev.parquet
 
 
-preprocessed_shots:
+filtered_shots:
   type: pandas.ParquetDataset
-  filepath: data/02_intermediate/dataset_kobe_prod.parquet
+  filepath: data/processed/data_filtered.parquet
+
+
+prod_shots:
+  type: pandas.ParquetDataset
+  filepath: data/model_input/dataset_kobe_prod.parquet
   
