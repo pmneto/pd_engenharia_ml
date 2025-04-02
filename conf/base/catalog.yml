@@ -18,3 +18,12 @@ prod_shots:
   type: pandas.ParquetDataset
   filepath: data/model_input/dataset_kobe_prod.parquet
   
+
+
+best_model:
+  type: pickle.PickleDataset
+  filepath: data/06_models/best_classifier.pkl
+
+logistic_model:
+  type: pickle.PickleDataset
+  filepath: data/06_models/logistic_model.pkl

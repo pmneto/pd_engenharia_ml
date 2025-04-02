@@ -2,100 +2,116 @@
 
 [![Powered by Kedro](https://img.shields.io/badge/powered_by-kedro-ffc900?logo=kedro)](https://kedro.org)
 
-## Overview
+## 🧭 Contexto Geral
 
-This is your new Kedro project, which was generated using `kedro 0.19.12`.
+Este projeto segue a estrutura do framework **Kedro**, mas foi desenvolvido de acordo com as diretrizes do **Microsoft TDSP (Team Data Science Process)**, conforme solicitado no enunciado da atividade. Todos os artefatos gerados, pipelines e registros de experimentos são compatíveis com as fases previstas no ciclo de vida TDSP (ingestão, preparação, modelagem, scoring e monitoramento).
 
-Take a look at the [Kedro documentation](https://docs.kedro.org) to get started.
+---
 
-## Rules and guidelines
+## ✅ Status do Projeto
 
-In order to get the best out of the template:
+- ✅ Ingestão e limpeza dos dados implementada
+- ✅ Separação de treino/teste com estratificação
+- ✅ Registro no MLflow do pipeline de preparação
+- ✅ Treinamento de dois modelos (Regressão Logística e Classificador)
+- ✅ Registro manual de parâmetros e métricas no MLflow
+- 🔜 Registro do modelo final e deploy via aplicação
+- 🔜 Avaliação do modelo com base de produção
+- 🔜 Dashboard de monitoramento via Streamlit
 
-* Don't remove any lines from the `.gitignore` file we provide
-* Make sure your results can be reproduced by following a data engineering convention
-* Don't commit data to your repository
-* Don't commit any credentials or your local configuration to your repository. Keep all your credentials and local configuration in `conf/local/`
+---
 
-## How to install dependencies
+## Como instalar as dependências
 
-Declare any dependencies in `requirements.txt` for `pip` installation.
+Declare as dependências no arquivo `requirements.txt`.
 
-To install them, run:
+Para instalar, execute:
 
 ```
 pip install -r requirements.txt
 ```
 
-## How to run your Kedro pipeline
+## Como rodar o pipeline do Kedro
 
-You can run your Kedro project with:
+Execute o pipeline com:
 
 ```
 kedro run
 ```
 
-## How to test your Kedro project
+Ou rode um node específico:
 
-Have a look at the file `src/tests/test_run.py` for instructions on how to write your tests. You can run your tests as follows:
+```
+kedro run --from-nodes "nome_do_node"
+```
+
+## Como rodar o MLflow
+
+Inicie o servidor MLflow local com:
+
+```
+mlflow ui
+```
+
+Depois, acesse: http://127.0.0.1:5000
+
+---
+
+## Organização por Fases (TDSP)
+
+| Fase TDSP         | Implementação no Projeto                            |
+|-------------------|-----------------------------------------------------|
+| Ingestão          | `download_data` / dados em `/data/raw`             |
+| Preparação        | `preprocess_data` → `/data/processed`              |
+| Modelagem         | `train_models_node` com PyCaret e MLflow           |
+| Avaliação         | Métricas logadas no MLflow                         |
+| Operacionalização | A definir: aplicação + Streamlit + scoring final   |
+| Monitoramento     | Planejado para o dashboard                         |
+
+---
+
+## Como testar o projeto
+
+Veja o arquivo `src/tests/test_run.py` para instruções.
+
+Execute os testes com:
 
 ```
 pytest
 ```
 
-You can configure the coverage threshold in your project's `pyproject.toml` file under the `[tool.coverage.report]` section.
+Você pode configurar o limite mínimo de cobertura em `pyproject.toml`, na seção `[tool.coverage.report]`.
 
+---
 
-## Project dependencies
+## Como trabalhar com notebooks no Kedro
 
-To see and update the dependency requirements for your project use `requirements.txt`. You can install the project requirements with `pip install -r requirements.txt`.
+Use `kedro jupyter` ou `kedro ipython` para acessar os objetos `context`, `session`, `catalog` e `pipelines` já carregados.
 
-[Further information about project dependencies](https://docs.kedro.org/en/stable/kedro_project_setup/dependencies.html#project-specific-dependencies)
-
-## How to work with Kedro and notebooks
-
-> Note: Using `kedro jupyter` or `kedro ipython` to run your notebook provides these variables in scope: `context`, 'session', `catalog`, and `pipelines`.
->
-> Jupyter, JupyterLab, and IPython are already included in the project requirements by default, so once you have run `pip install -r requirements.txt` you will not need to take any extra steps before you use them.
-
-### Jupyter
-To use Jupyter notebooks in your Kedro project, you need to install Jupyter:
-
-```
-pip install jupyter
-```
-
-After installing Jupyter, you can start a local notebook server:
-
+### Jupyter Notebook
 ```
 kedro jupyter notebook
 ```
 
 ### JupyterLab
-To use JupyterLab, you need to install it:
-
-```
-pip install jupyterlab
-```
-
-You can also start JupyterLab:
-
 ```
 kedro jupyter lab
 ```
 
 ### IPython
-And if you want to run an IPython session:
-
 ```
 kedro ipython
 ```
 
-### How to ignore notebook output cells in `git`
-To automatically strip out all output cell contents before committing to `git`, you can use tools like [`nbstripout`](https://github.com/kynan/nbstripout). For example, you can add a hook in `.git/config` with `nbstripout --install`. This will run `nbstripout` before anything is committed to `git`.
+### Ignorar saídas de notebook no Git
+Para remover as saídas de células antes de commitar:
+```
+nbstripout --install
+```
 
-> *Note:* Your output cells will be retained locally.
+---
 
-## Package your Kedro project
+## Empacotamento do Projeto
 
-[Further information about building project documentation and packaging your project](https://docs.kedro.org/en/stable/tutorial/package_a_project.html)
+Veja a [documentação oficial](https://docs.kedro.org/en/stable/tutorial/package_a_project.html) para empacotar o projeto como biblioteca ou gerar documentação.
+

@@ -6,7 +6,14 @@ def create_pipeline(**kwargs) -> Pipeline:
         node(
             func=train_and_save_models,
             inputs={
-                "data": "base_train",               # dataset com target já incluso
-                "session_id": "params:session_id"   # você define isso no parameters.yml
+                "data": "filtered_shots",
+                "session_id": "params:session_id",
+                "cv_folds": "params:cv_folds"
             },
-            outputs="best_model",  # Só retornamos o class_
+            outputs={
+                "best_model": "best_model",
+                "logistic_model": "logistic_model"
+            },
+            name="train_models_node"
+        )
+    ])
