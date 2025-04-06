@@ -3,6 +3,7 @@ import mlflow
 import os
 from sklearn.metrics import log_loss, f1_score
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, log_loss, confusion_matrix, roc_curve, auc
+from mlflow.models.signature import infer_signature
 
 import matplotlib.image as mpimg
 from datetime import datetime
@@ -275,12 +276,16 @@ def train_logistic_model(data, session_id: int, cv_folds: int):
         plot_roc_curve('l',y_test, y_pred_proba)
 
         os.makedirs("data/06_models", exist_ok=True)
-       
+        X_input = pred.drop(columns=["prediction_label", "prediction_score", "Label", "Score", "shot_made_flag"], errors="ignore")
         exp.save_model(tuned_logistic, "data/06_models/logistic_model")
 
        
-        mlflow.log_artifact("data/06_models/logistic_model.pkl", artifact_path="modelos")
-
+        mlflow.sklearn.log_model(
+            sk_model=tuned_logistic,           # seu modelo treinado
+            artifact_path="model",             # o nome do diretório no MLflow
+            input_example=X_input.iloc[:1],     # opcional mas recomendado
+            signature=mlflow.models.infer_signature(X_input, tuned_logistic.predict(X_input))
+        )
 
         mlflow.log_param("model_type", "LogisticRegression")
         mlflow.log_param("cv_folds", cv_folds)
@@ -328,10 +333,16 @@ def train_best_classifier(data, session_id: int, cv_folds: int):
 
         os.makedirs("data/06_models", exist_ok=True)
         # Salva o modelo treinado
+        X_input = pred.drop(columns=["prediction_label", "prediction_score", "Label", "Score", "shot_made_flag"], errors="ignore")
         _, model_path = exp.save_model(tuned_best, "data/06_models/best_classifier")
 
         # Faz o log do artefato corretamente
-        mlflow.log_artifact(model_path, artifact_path="modelos")
+        mlflow.sklearn.log_model(
+            sk_model=best_model,
+            artifact_path="model",
+            input_example=X_input.iloc[:1],
+            signature=infer_signature(X_input, best_model.predict(X_input))
+        )
 
         mlflow.log_param("model_type", type(tuned_best).__name__)
         mlflow.log_param("cv_folds", cv_folds)

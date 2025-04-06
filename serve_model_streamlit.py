@@ -41,17 +41,16 @@ with KedroSession.create(project_path=project_path) as session:
     minutes_remaining = st.number_input("Minutos restantes", min_value=0, max_value=12, value=5)
     shot_distance = st.number_input("Distância do arremesso (pés)", min_value=0, max_value=40, value=15)
     playoffs = st.selectbox("Jogo de playoff?", [0, 1])
-    home_game = st.selectbox("Jogo em casa?", [0, 1])
+    
 
     # === Monta o DataFrame com os dados inseridos
     input_data = pd.DataFrame([{
         "lat": lat,
         "lon": lon,
-        "period": period,
         "minutes_remaining": minutes_remaining,
-        "shot_distance": shot_distance,
+        "period": period,
         "playoffs": playoffs,
-        "home_game": home_game
+        "shot_distance": shot_distance,
     }])
 
     # === Previsão
