@@ -1,19 +1,33 @@
 from kedro.pipeline import Pipeline, node, pipeline
-from .nodes import train_and_save_models
+from .nodes import train_logistic_model, train_best_classifier,plot_data_filtered
 
 def create_pipeline(**kwargs) -> Pipeline:
     return pipeline([
         node(
-            func=train_and_save_models,
+            func=plot_data_filtered,
+            inputs="filtered_shots",
+            outputs=None,
+            name="plot_raw_data_before_training"
+        ),
+
+        node(
+            func=train_logistic_model,
             inputs={
                 "data": "filtered_shots",
                 "session_id": "params:session_id",
                 "cv_folds": "params:cv_folds"
             },
-            outputs={
-                "best_model": "best_model",
-                "logistic_model": "logistic_model"
+            outputs="logistic_model",
+            name="train_logistic_model_node"
+        ),
+        node(
+            func=train_best_classifier,
+            inputs={
+                "data": "filtered_shots",
+                "session_id": "params:session_id",
+                "cv_folds": "params:cv_folds"
             },
-            name="train_models_node"
+            outputs="best_model",
+            name="train_best_classifier_node"
         )
     ])

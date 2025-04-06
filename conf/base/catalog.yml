@@ -16,9 +16,8 @@ filtered_shots:
 
 prod_shots:
   type: pandas.ParquetDataset
-  filepath: data/model_input/dataset_kobe_prod.parquet
+  filepath: data/05_model_input/dataset_kobe_prod.parquet
   
-
 
 best_model:
   type: pickle.PickleDataset

@@ -5,10 +5,12 @@ import os
 import io 
 
 
-DATASET_URL = "https://github.com/tciodaro/eng_ml/raw/main/data/dataset_kobe_dev.parquet"
+
 
 def download_and_load_data():
     """Baixa o dataset e retorna um DataFrame."""
+
+    DATASET_URL = "https://github.com/tciodaro/eng_ml/raw/main/data/dataset_kobe_dev.parquet"
     response = requests.get(DATASET_URL)
     filename = "data/01_raw/dataset_kobe_dev.parquet"
 
@@ -54,3 +56,21 @@ def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
+def download_and_load_data_prod():
+    """Baixa o dataset e retorna um DataFrame."""
+
+    DATASET_URL_PROD = "https://github.com/tciodaro/eng_ml/raw/main/data/dataset_kobe_prod.parquet"
+    response = requests.get(DATASET_URL_PROD)
+    filename = "data/05_model_input/dataset_kobe_prod.parquet"
+
+    with open(filename, "wb") as f:
+        f.write(response.content)
+
+    if not os.path.exists(filename):
+        print("Erro: O dataset não foi baixado corretamente!")
+        return None
+
+    df = pd.read_parquet(filename)
+    print(f"Dataset carregado com {df.shape[0]} linhas e {df.shape[1]} colunas")
+    return df
+    
