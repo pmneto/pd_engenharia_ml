@@ -199,6 +199,7 @@ def plot_data_filtered(df, output_path="data/08_reporting/prediction_map_raw_dat
 
     # Garante que o diretório existe
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    
 
     # Salva e finaliza
     plt.savefig(output_path, dpi=300)
@@ -242,6 +243,7 @@ def extract_metrics(df):
 
 
 def train_logistic_model(data, session_id: int, cv_folds: int):
+
     mlflow.set_experiment("kobe_classificacao")
     with mlflow.start_run(run_name="Treinamento"):
         exp = setup_experiment(data, session_id, cv_folds)
@@ -300,6 +302,7 @@ def train_logistic_model(data, session_id: int, cv_folds: int):
 
 
 def train_best_classifier(data, session_id: int, cv_folds: int):
+
     mlflow.set_experiment("kobe_classificacao")
     with mlflow.start_run(run_name="Treinamento"):
         exp = setup_experiment(data, session_id, cv_folds)
