@@ -5,5 +5,5 @@ def create_pipeline(**kwargs) -> Pipeline:
     return Pipeline([
         node(download_and_load_data, inputs=None, outputs="kobe_shots", name="download_data"),
         node(download_and_load_data_prod, inputs=None, outputs="prod_shots", name="download_data_prod"),
-        node(preprocess_data, inputs="kobe_shots", outputs="preprocessed_shots", name="preprocess_data"),
+        node(preprocess_data, inputs="kobe_shots", outputs="filtered_shots", name="preprocess_data"),
     ])
