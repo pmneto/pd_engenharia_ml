@@ -66,8 +66,9 @@ def download_and_load_data_prod():
     DATASET_URL_PROD = "https://github.com/tciodaro/eng_ml/raw/main/data/dataset_kobe_prod.parquet"
     response = requests.get(DATASET_URL_PROD)
     filename = "data/05_model_input/dataset_kobe_prod.parquet"
+    print(response.status_code)
 
-    os.makedirs(os.path.dirname("data/05_model_input"), exist_ok=True)
+    os.makedirs(os.path.dirname("data/05_model_input/"), exist_ok=True)
 
 
     with open(filename, "wb") as f:
