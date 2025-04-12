@@ -14,7 +14,7 @@ def download_and_load_data():
     response = requests.get(DATASET_URL)
     filename = "data/01_raw/dataset_kobe_dev.parquet"
 
-    os.makedirs(os.path.dirname("data/01_raw/"), exist_ok=True)
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
 
     with open(filename, "wb") as f:
         f.write(response.content)
@@ -47,7 +47,7 @@ def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
     df = df.drop_duplicates()
     df = df[features]
 
-    os.makedirs(os.path.dirname("data/processed/"), exist_ok=True)
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
 
     df.to_parquet(filename)
 
@@ -68,7 +68,7 @@ def download_and_load_data_prod():
     filename = "data/05_model_input/dataset_kobe_prod.parquet"
     print(response.status_code)
 
-    os.makedirs(os.path.dirname("data/05_model_input/"), exist_ok=True)
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
 
 
     with open(filename, "wb") as f:
