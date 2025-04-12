@@ -47,6 +47,8 @@ def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
     df = df.drop_duplicates()
     df = df[features]
 
+    os.makedirs(os.path.dirname("data/processed/"), exist_ok=True)
+
     df.to_parquet(filename)
 
     if not os.path.exists(filename):
@@ -64,6 +66,9 @@ def download_and_load_data_prod():
     DATASET_URL_PROD = "https://github.com/tciodaro/eng_ml/raw/main/data/dataset_kobe_prod.parquet"
     response = requests.get(DATASET_URL_PROD)
     filename = "data/05_model_input/dataset_kobe_prod.parquet"
+
+    os.makedirs(os.path.dirname("data/05_model_input"), exist_ok=True)
+
 
     with open(filename, "wb") as f:
         f.write(response.content)
