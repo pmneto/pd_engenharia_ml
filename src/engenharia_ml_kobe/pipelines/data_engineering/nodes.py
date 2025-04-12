@@ -14,6 +14,8 @@ def download_and_load_data():
     response = requests.get(DATASET_URL)
     filename = "data/01_raw/dataset_kobe_dev.parquet"
 
+    os.makedirs(os.path.dirname("data/01_raw/"), exist_ok=True)
+
     with open(filename, "wb") as f:
         f.write(response.content)
 
