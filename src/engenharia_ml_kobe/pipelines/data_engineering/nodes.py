@@ -1,84 +1,67 @@
 import pandas as pd
 import requests
-import numpy as np
 import os
-import io 
-
-
+import mlflow
 
 
 def download_and_load_data():
-    """Baixa o dataset e retorna um DataFrame."""
-
+    """Baixa o dataset de desenvolvimento e retorna um DataFrame."""
     DATASET_URL = "https://github.com/tciodaro/eng_ml/raw/main/data/dataset_kobe_dev.parquet"
-    response = requests.get(DATASET_URL)
-    filename = "data/01_raw/dataset_kobe_dev.parquet"
+    filename = "data/raw/dataset_kobe_dev.parquet"
 
     os.makedirs(os.path.dirname(filename), exist_ok=True)
 
+    response = requests.get(DATASET_URL)
     with open(filename, "wb") as f:
         f.write(response.content)
 
-    if not os.path.exists(filename):
-        print("Erro: O dataset não foi baixado corretamente!")
-        return None
-
     df = pd.read_parquet(filename)
-    print(f"Dataset carregado com {df.shape[0]} linhas e {df.shape[1]} colunas")
+    print(f"[DEV] Dataset carregado com {df.shape[0]} linhas e {df.shape[1]} colunas")
     return df
-    
-def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
-    """Remove valores nulos e faz pré-processamento inicial."""
 
-    filename = "./data/processed/data_filtered.parquet"
 
-    features = ['lat',
-    'lon',
-    'minutes_remaining',
-    'period',
-    'playoffs',
-    'shot_distance',
-    'shot_made_flag'
-    ]
-    
-    df.columns = df.columns.str.lower().str.replace(' ', '_').str.replace('(', '').str.replace(')', '')
-    df = df.dropna()
-    df = df.dropna(how='any',axis=0)
-    df = df.drop_duplicates()
-    df = df[features]
+def preprocess_data(df: pd.DataFrame, is_prod=False) -> pd.DataFrame:
+    """Pré-processa os dados (dev ou prod) e salva resultado no caminho correto."""
+    mlflow.set_experiment("engenharia_ml")
+    run_name = "PreparacaoDados_Prod" if is_prod else "PreparacaoDados"
 
-    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    with mlflow.start_run(run_name=run_name):
+        filename = (
+            "data/processed/data_filtered_prod.parquet"
+            if is_prod
+            else "data/processed/data_filtered.parquet"
+        )
 
-    df.to_parquet(filename)
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
 
-    if not os.path.exists(filename):
-        print("Erro: O dataset não foi processado corretamente!")
-        return None
+        features = ['lat', 'lng', 'minutes_remaining', 'period', 'playoffs', 'shot_distance', 'shot_made_flag']
 
-    df = pd.read_parquet(filename)
-    print(f"Dataset carregado com {df.shape[0]} linhas e {df.shape[1]} colunas")
+        df.columns = df.columns.str.lower().str.replace(' ', '_').str.replace('(', '').str.replace(')', '')
 
-    return df
+        if 'lon' in df.columns:
+            df = df.rename(columns={'lon': 'lng'})
+
+        df = df.dropna().drop_duplicates()
+        df = df[features]
+
+        df.to_parquet(filename)
+        mlflow.log_artifact(filename)
+
+        print(f"[{'PROD' if is_prod else 'DEV'}] Dataset salvo com {df.shape[0]} linhas e {df.shape[1]} colunas")
+        return df
+
 
 def download_and_load_data_prod():
-    """Baixa o dataset e retorna um DataFrame."""
-
+    """Baixa o dataset de produção, aplica pré-processamento e retorna um DataFrame."""
     DATASET_URL_PROD = "https://github.com/tciodaro/eng_ml/raw/main/data/dataset_kobe_prod.parquet"
-    response = requests.get(DATASET_URL_PROD)
-    filename = "data/05_model_input/dataset_kobe_prod.parquet"
-    print(response.status_code)
+    filename = "data/raw/dataset_kobe_prod.parquet"
 
     os.makedirs(os.path.dirname(filename), exist_ok=True)
 
-
+    response = requests.get(DATASET_URL_PROD)
     with open(filename, "wb") as f:
         f.write(response.content)
 
-    if not os.path.exists(filename):
-        print("Erro: O dataset não foi baixado corretamente!")
-        return None
-
     df = pd.read_parquet(filename)
-    print(f"Dataset carregado com {df.shape[0]} linhas e {df.shape[1]} colunas")
-    return df
-    
+    print(f"[PROD] Dataset carregado com {df.shape[0]} linhas e {df.shape[1]} colunas")
+    return preprocess_data(df, is_prod=True)

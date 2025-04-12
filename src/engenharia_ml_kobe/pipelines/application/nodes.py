@@ -49,7 +49,7 @@ def plot_previsoes_producao(df, output_path="data/08_reporting/prediction_map_pr
     for classe in df["prediction_label"].unique():
         subset = df[df["prediction_label"] == classe]
         ax.scatter(
-            subset["lon"],
+            subset["lng"],
             subset["lat"],
             c=cores[classe],
             marker=marcadores[classe],
@@ -80,33 +80,11 @@ def aplicar_modelo_prod(model_path, df_prod):
     with mlflow.start_run(run_name="PipelineAplicacao"):
         print("[INFO] Rodando pipeline de aplicação...")
         
-        cols = [
-            'action_type',
-            'combined_shot_type',
-            'game_event_id',
-            'game_id',
-            'loc_x',
-            'loc_y',
-            'season',
-            'seconds_remaining',
-            'shot_type',
-            'shot_zone_area',
-            'shot_zone_basic',
-            'shot_zone_range',
-            'team_id',
-            'team_name',
-            'game_date',
-            'matchup',
-            'opponent',
-            'shot_id',
-            'shot_made_flag'
-        ]
+       # Garante que as features estejam no padrão correto para predição
+        features = ["lat", "lng", "minutes_remaining", "period", "playoffs", "shot_distance"]
 
-        if "shot_made_flag" in df_prod.columns:
-             df_prod = df_prod.dropna(subset=cols)
-
-
-        X_prod = df_prod.drop(columns=cols, errors="ignore")
+        df_prod = df_prod.dropna(subset=features)  # Aplica apenas nas colunas que serão usadas
+        X_prod = df_prod[features]
 
         model = model_path
 

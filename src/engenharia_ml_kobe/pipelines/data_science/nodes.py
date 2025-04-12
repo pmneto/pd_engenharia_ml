@@ -123,7 +123,7 @@ def plot_previsoes_modelo(modelo, df, output_path="data/08_reporting/prediction_
     for classe in df["prediction_label"].unique():
         subset = df[df["prediction_label"] == classe]
         plt.scatter(
-            subset["lon"],
+            subset["lng"],
             subset["lat"],
             c=cores[classe],
             label=labels[classe],
@@ -179,7 +179,7 @@ def plot_data_filtered(df, output_path="data/08_reporting/prediction_map_raw_dat
     for classe in sorted(df["shot_made_flag"].dropna().unique()):
         subset = df[df["shot_made_flag"] == classe]
         ax.scatter(
-            subset["lon"],
+            subset["lng"],
             subset["lat"],
             c=cores.get(classe, "gray"),
             marker=marcadores.get(classe, "."),
