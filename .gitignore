@@ -6,13 +6,13 @@ conf/local/**
 !conf/local/.gitkeep
 .telemetry
 
-!data/01_raw/nba_court.png
-
 # ignore potentially sensitive credentials files
 conf/**/*credentials*
 
-# ignore everything in the following folders
-data/**
+# ignora tudo dentro de data, exceto a imagem da quadra e subpastas
+data/*
+!data/01_raw/
+!data/01_raw/nba_court.png
 
 # except their sub-folders
 !data/**/
