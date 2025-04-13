@@ -9,11 +9,14 @@ conf/local/**
 # ignore potentially sensitive credentials files
 conf/**/*credentials*
 
-# ignore everything in the data folder
-data/*
-!data/01_raw/
-!data/01_raw/nba_court.png
-!**/.gitkeep
+# ignore everything in the following folders
+data/**
+
+# except their sub-folders
+!data/**/
+
+# also keep all .gitkeep files
+!.gitkeep
 
 # ignore kedro-viz metadata
 .viz
@@ -80,6 +83,8 @@ wheels/
 MANIFEST
 
 # PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
 
