@@ -6,7 +6,7 @@ conf/local/**
 !conf/local/.gitkeep
 .telemetry
 
-!./data/01_raw/nba_court.png
+!data/01_raw/nba_court.png
 
 # ignore potentially sensitive credentials files
 conf/**/*credentials*
