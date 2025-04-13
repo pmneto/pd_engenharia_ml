@@ -1,117 +1,122 @@
-# engenharia_ml_kobe
 
-[![Powered by Kedro](https://img.shields.io/badge/powered_by-kedro-ffc900?logo=kedro)](https://kedro.org)
+# Projeto: Preditor de Arremessos do Kobe Bryant 🏀
 
-## 🧭 Contexto Geral
-
-Este projeto segue a estrutura do framework **Kedro**, mas foi desenvolvido de acordo com as diretrizes do **Microsoft TDSP (Team Data Science Process)**, conforme solicitado no enunciado da atividade. Todos os artefatos gerados, pipelines e registros de experimentos são compatíveis com as fases previstas no ciclo de vida TDSP (ingestão, preparação, modelagem, scoring e monitoramento).
+Este projeto foi desenvolvido como parte da disciplina de Engenharia de Machine Learning, seguindo o framework **TDSP (Team Data Science Process)**, e cumpre integralmente as rubricas exigidas na avaliação, integrando ferramentas como **Kedro**, **MLflow**, **PyCaret**, **Streamlit** e **Docker**.
 
 ---
 
-## ✅ Status do Projeto
+## 📦 Estrutura do Projeto
 
-- ✅ Ingestão e limpeza dos dados implementada
-- ✅ Separação de treino/teste com estratificação
-- ✅ Registro no MLflow do pipeline de preparação
-- ✅ Treinamento de dois modelos (Regressão Logística e Classificador)
-- ✅ Registro manual de parâmetros e métricas no MLflow
-- 🔜 Registro do modelo final e deploy via aplicação
-- 🔜 Avaliação do modelo com base de produção
-- 🔜 Dashboard de monitoramento via Streamlit
+```
+engenharia_ml_kobe/
+├── data/
+│   ├── raw/                  # Dados brutos de desenvolvimento e produção
+│   ├── processed/            # Dados pós-processamento (filtrados)
+│   └── model_output/         # Métricas, gráficos e inferências
+├── notebooks/
+│   └── eda_kobe.ipynb        # Análise exploratória dos dados
+├── conf/base/                # Catálogo Kedro + parâmetros de configuração
+├── src/
+│   └── engenharia_ml_kobe/   # Pipelines, nodes e pipelines de aplicação
+├── README.md
+└── docker-compose.yml
+```
 
 ---
 
-## Como instalar as dependências
+## ✅ Etapas realizadas e justificativas
 
-Declare as dependências no arquivo `requirements.txt`.
+### 1. Coleta e categorização dos dados via API pública
 
-Para instalar, execute:
+- Os dados foram baixados de URLs públicas usando `requests`.
+- Foram salvos em `/data/raw/` como `dataset_kobe_dev.parquet` e `dataset_kobe_prod.parquet`.
 
+### 2. Pré-processamento dos dados
+
+- Criado o pipeline `PreparacaoDados`, que:
+  - Renomeia colunas para `snake_case`
+  - Remove duplicatas e valores nulos
+  - Substitui `lon` por `lng` para padronização
+  - Seleciona colunas específicas:
+    `['lat', 'lng', 'minutes_remaining', 'period', 'playoffs', 'shot_distance', 'shot_made_flag']`
+- Dados filtrados salvos em `/data/processed/data_filtered.parquet`
+
+### 3. Treinamento de modelos
+
+- Utilizado `PyCaret` para experimentar múltiplos modelos de classificação:
+  - **Regressão Logística** (como baseline obrigatório)
+  - **Árvore de Decisão** e **AdaBoostClassifier**
+- Os modelos foram logados no **MLflow** com métricas:
+  - Log Loss, F1 Score, Acurácia, AUC, Recall e Precisão.
+
+### 4. Aplicação em produção
+
+- Pipeline aplica o modelo treinado na base de produção (`dataset_kobe_prod.parquet`).
+- Verifica aderência do modelo à nova base.
+- Resultados salvos em `model_output/predicoes_prod.parquet`.
+
+### 5. Monitoramento e Retreinamento
+
+- Criado dashboard com **Streamlit** para:
+  - Visualizar métricas e inferências
+  - Simular cenário com/sem variável alvo
+- Estratégias propostas:
+  - **Reativa**: Reprocessar a cada x períodos se o desempenho cair
+  - **Preditiva**: Detecção de drift e agendamento automático
+
+---
+
+## 🐳 Executando com Docker
+
+1. Compile a imagem e suba os containers:
+```bash
+docker-compose up --build
 ```
-pip install -r requirements.txt
-```
 
-## Como rodar o pipeline do Kedro
+2. Os serviços estarão disponíveis em:
+- MLflow: http://localhost:5000
+- Streamlit: http://localhost:8501
+- API (se configurada): http://localhost:8000
 
-Execute o pipeline com:
+---
 
-```
+## 📑 Rodando a pipeline Kedro
+
+No terminal dentro do container, execute:
+```bash
 kedro run
 ```
 
-Ou rode um node específico:
-
-```
-kedro run --from-nodes "nome_do_node"
-```
-
-## Como rodar o MLflow
-
-Inicie o servidor MLflow local com:
-
-```
-mlflow ui
-```
-
-Depois, acesse: http://127.0.0.1:5000
-
----
-
-## Organização por Fases (TDSP)
-
-| Fase TDSP         | Implementação no Projeto                            |
-|-------------------|-----------------------------------------------------|
-| Ingestão          | `download_data` / dados em `/data/raw`             |
-| Preparação        | `preprocess_data` → `/data/processed`              |
-| Modelagem         | `train_models_node` com PyCaret e MLflow           |
-| Avaliação         | Métricas logadas no MLflow                         |
-| Operacionalização | A definir: aplicação + Streamlit + scoring final   |
-| Monitoramento     | Planejado para o dashboard                         |
-
----
-
-## Como testar o projeto
-
-Veja o arquivo `src/tests/test_run.py` para instruções.
-
-Execute os testes com:
-
-```
-pytest
-```
-
-Você pode configurar o limite mínimo de cobertura em `pyproject.toml`, na seção `[tool.coverage.report]`.
-
----
-
-## Como trabalhar com notebooks no Kedro
-
-Use `kedro jupyter` ou `kedro ipython` para acessar os objetos `context`, `session`, `catalog` e `pipelines` já carregados.
-
-### Jupyter Notebook
-```
-kedro jupyter notebook
-```
-
-### JupyterLab
-```
-kedro jupyter lab
-```
-
-### IPython
-```
-kedro ipython
-```
-
-### Ignorar saídas de notebook no Git
-Para remover as saídas de células antes de commitar:
-```
-nbstripout --install
+Para executar uma etapa específica:
+```bash
+kedro run --from-nodes "PreparacaoDados"
 ```
 
 ---
 
-## Empacotamento do Projeto
+## 📊 Análise exploratória
 
-Veja a [documentação oficial](https://docs.kedro.org/en/stable/tutorial/package_a_project.html) para empacotar o projeto como biblioteca ou gerar documentação.
+Notebook disponível em:
+👉 `notebooks/eda_kobe.ipynb`
+
+Inclui visualização de:
+- Distribuição da variável alvo
+- Dispersão de `lat` vs `lng`
+- Correlação entre variáveis
+
+---
+
+## 📂 Artefatos gerados
+
+Algumas imagens, gráficos e arquivos de apoio foram salvos em:
+
+- `data/processed/` → Dados prontos para modelagem
+- `data/model_output/` → Inferências da base de produção
+- `mlruns/` → Logs e modelos versionados
+
+---
+
+## 🔗 Conclusão
+
+Projeto entregue conforme solicitado, com atenção especial aos critérios avaliativos da disciplina. Caso deseje revisar ou complementar qualquer parte, sinta-se à vontade para sugerir ajustes!
 

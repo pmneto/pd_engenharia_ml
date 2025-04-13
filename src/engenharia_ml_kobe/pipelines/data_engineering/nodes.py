@@ -23,13 +23,11 @@ def download_and_load_data():
 def preprocess_data(df: pd.DataFrame, is_prod=False) -> pd.DataFrame:
     """Pré-processa os dados (dev ou prod) e salva resultado no caminho correto."""
     mlflow.set_experiment("engenharia_ml")
-    run_name = "PreparacaoDados_Prod" if is_prod else "PreparacaoDados"
+    run_name = "PreparacaoDados"
 
     with mlflow.start_run(run_name=run_name):
         filename = (
-            "data/processed/data_filtered_prod.parquet"
-            if is_prod
-            else "data/processed/data_filtered.parquet"
+           "data/processed/data_filtered.parquet"
         )
 
         os.makedirs(os.path.dirname(filename), exist_ok=True)

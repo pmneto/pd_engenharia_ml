@@ -352,3 +352,48 @@ def train_best_classifier(data, session_id: int, cv_folds: int):
         mlflow.log_metric("train_rows", len(data))
 
     return tuned_best
+
+def train_decision_tree_model(df: pd.DataFrame, session_id: int , cv_folds: int ):
+    """Treina e registra um modelo de árvore de decisão com PyCaret e MLflow."""
+    mlflow.set_experiment("kobe_classificacao")
+    with mlflow.start_run(run_name="Treinamento"):
+
+        # Setup
+        exp = setup(
+            data=df,
+            target="shot_made_flag",
+            session_id=session_id,
+            fold=cv_folds,
+            silent=True,
+            verbose=False,
+            html=False
+        )
+
+        # Criação e tuning do modelo
+        dt_model = create_model("dt")
+        tuned_dt = tune_model(dt_model, n_iter=10, fold=cv_folds, optimize="F1")
+
+        # Predição
+        pred = predict_model(tuned_dt)
+
+        # Métricas
+        y_test = pred["shot_made_flag"]
+        y_pred_label = pred["prediction_label"]
+        y_pred_proba = pred["prediction_score"]
+
+        mlflow.log_metric("log_loss", log_loss(y_test, y_pred_proba))
+        mlflow.log_metric("f1_score", f1_score(y_test, y_pred_label))
+
+        os.makedirs("data/06_models", exist_ok=True)
+        # Salva o modelo treinado
+
+        X_input = pred.drop(columns=["prediction_label", "prediction_score", "Label", "Score", "shot_made_flag"], errors="ignore")
+        _, model_path = exp.save_model(tuned_dt, "data/06_models/decisionTree")
+
+
+
+        # Log do modelo
+        mlflow.sklearn.log_model(tuned_dt, "decision_tree_model")
+
+        print("[OK] Decision Tree model registrado no MLflow")
+        return tuned_dt
