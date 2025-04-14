@@ -6,7 +6,7 @@ st.set_page_config(layout="wide")
 st.title("📊 Dashboard de Monitoramento - Modelo Kobe")
 
 # Carrega as métricas
-metricas_path = "data/07_model_output/metricas_producao.csv"
+metricas_path = "data/07_model_output/metricas_producao_dt.csv"
 df = pd.read_csv(metricas_path)
 
 # Mostra tabela geral

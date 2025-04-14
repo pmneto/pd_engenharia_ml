@@ -1,4 +1,6 @@
 from pycaret.classification import ClassificationExperiment
+
+
 import mlflow
 import os
 from sklearn.metrics import log_loss, f1_score
@@ -30,6 +32,9 @@ def plot_roc_curve(modelo , y_true, y_proba, output_path="data/08_reporting/roc_
 
     if modelo.lower() == 'l':
         output_path = "data/08_reporting/roc_curve_reg_log.png"
+    elif modelo.lower() == 'dt':
+        output_path = "data/08_reporting/roc_curve_dt.png"
+
 
     fpr, tpr, _ = roc_curve(y_true, y_proba)
     roc_auc = auc(fpr, tpr)
@@ -60,7 +65,8 @@ def plot_confusion_matrix(modelo , y_true, y_pred, output_path="data/08_reportin
 
     if modelo.lower() == 'l':
         output_path = "data/08_reporting/confusion_matrix.png"
-
+    elif modelo.lower() == 'dt':
+        output_path = "data/08_reporting/confusion_matrix_dt.png"
 
     cm = confusion_matrix(y_true, y_pred)
     plt.figure(figsize=(6, 4))
@@ -86,6 +92,8 @@ def salvar_metricas_csv(modelo: str, metricas: dict, output_path: str = "data/07
 
     if modelo.lower() == 'l':
         output_path = "data/07_model_output/metricas_modelo_escolhido_reg_log.csv"
+    elif modelo.lower() == 'dt':
+        output_path = "data/07_model_output/metricas_modelo_escolhido_dt.csv"
 
     df_metricas = pd.DataFrame([metricas])  # Uma linha só
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
@@ -114,6 +122,8 @@ def plot_previsoes_modelo(modelo, df, output_path="data/08_reporting/prediction_
 
     if modelo.lower() == 'l':
          output_path: str = "data/08_reporting/prediction_map_reg_log.png"
+    elif modelo.lower() == 'dt':
+         output_path: str = "data/08_reporting/prediction_map_dt.png"
     
 
     plt.figure(figsize=(10, 8))
@@ -292,6 +302,8 @@ def train_logistic_model(data, session_id: int, cv_folds: int):
         mlflow.log_param("model_type", "LogisticRegression")
         mlflow.log_param("cv_folds", cv_folds)
         mlflow.log_metric("train_rows", len(data))
+        mlflow.log_metric("test_rows", len(y_test))
+
 
     return tuned_logistic
 
@@ -350,50 +362,87 @@ def train_best_classifier(data, session_id: int, cv_folds: int):
         mlflow.log_param("model_type", type(tuned_best).__name__)
         mlflow.log_param("cv_folds", cv_folds)
         mlflow.log_metric("train_rows", len(data))
+        mlflow.log_metric("test_rows", len(y_test))
+
 
     return tuned_best
 
-def train_decision_tree_model(df: pd.DataFrame, session_id: int , cv_folds: int ):
+def train_decision_tree_model(data: pd.DataFrame, session_id: int, cv_folds: int):
     """Treina e registra um modelo de árvore de decisão com PyCaret e MLflow."""
-    mlflow.set_experiment("kobe_classificacao")
-    with mlflow.start_run(run_name="Treinamento"):
 
-        # Setup
-        exp = setup(
-            data=df,
+
+    mlflow.set_experiment("kobe_classificacao")
+
+    with mlflow.start_run(run_name="Treinamento_ArvoreDecisao"):
+        # Setup do experimento
+        exp = ClassificationExperiment()
+        exp.setup(
+            data=data,
             target="shot_made_flag",
             session_id=session_id,
+            train_size=0.8,
             fold=cv_folds,
-            silent=True,
-            verbose=False,
-            html=False
+            fold_shuffle=True,
+            html=False,
+            log_experiment=False,
+            verbose=False
         )
 
-        # Criação e tuning do modelo
-        dt_model = create_model("dt")
-        tuned_dt = tune_model(dt_model, n_iter=10, fold=cv_folds, optimize="F1")
+        # Criação e tuning do modelo de árvore de decisão
+        dt_model = exp.create_model("dt", fold=cv_folds)
+        tuned_dt = exp.tune_model(dt_model, n_iter=10, fold=cv_folds, optimize="F1")
 
         # Predição
-        pred = predict_model(tuned_dt)
+        pred = exp.predict_model(tuned_dt)
 
-        # Métricas
+        # Extração de métricas
         y_test = pred["shot_made_flag"]
         y_pred_label = pred["prediction_label"]
         y_pred_proba = pred["prediction_score"]
 
-        mlflow.log_metric("log_loss", log_loss(y_test, y_pred_proba))
-        mlflow.log_metric("f1_score", f1_score(y_test, y_pred_label))
+        logloss = log_loss(y_test, y_pred_proba)
+        f1 = f1_score(y_test, y_pred_label)
 
+
+        metricas = {
+            "model_type": type(tuned_dt).__name__,
+            "log_loss": log_loss(y_test, y_pred_proba),
+            "accuracy": accuracy_score(y_test, y_pred_label),
+            "precision": precision_score(y_test, y_pred_label, zero_division=0),
+            "recall": recall_score(y_test, y_pred_label, zero_division=0),
+            "f1_score": f1_score(y_test, y_pred_label),
+            "cv_folds": cv_folds,
+            "train_rows": len(data),
+            "timestamp":datetime.now().isoformat()
+        }
+
+        salvar_metricas_csv('dt',metricas)
+        plot_confusion_matrix('dt',y_test, y_pred_label)
+        plot_roc_curve('dt',y_test, y_pred_proba)
+
+        # Log de métricas
+        mlflow.log_metric("log_loss", logloss)
+        mlflow.log_metric("f1_score", f1)
+        mlflow.log_metric("train_rows", int(len(data) * 0.8))
+        mlflow.log_metric("test_rows", int(len(data) * 0.2))
+
+        # Log de parâmetros
+        mlflow.log_param("model_type", "DecisionTree")
+        mlflow.log_param("cv_folds", cv_folds)
+        mlflow.log_param("test_size", 0.2)
+
+        # Salvar modelo
         os.makedirs("data/06_models", exist_ok=True)
-        # Salva o modelo treinado
-
         X_input = pred.drop(columns=["prediction_label", "prediction_score", "Label", "Score", "shot_made_flag"], errors="ignore")
-        _, model_path = exp.save_model(tuned_dt, "data/06_models/decisionTree")
+        exp.save_model(tuned_dt, "data/06_models/decisionTree")
 
+        # Log do modelo completo
+        mlflow.sklearn.log_model(
+            sk_model=tuned_dt,
+            artifact_path="model",
+            input_example=X_input.iloc[:1],
+            signature=infer_signature(X_input, tuned_dt.predict(X_input))
+        )
 
-
-        # Log do modelo
-        mlflow.sklearn.log_model(tuned_dt, "decision_tree_model")
-
-        print("[OK] Decision Tree model registrado no MLflow")
+        print("[OK] Modelo de árvore de decisão treinado e registrado no MLflow.")
         return tuned_dt

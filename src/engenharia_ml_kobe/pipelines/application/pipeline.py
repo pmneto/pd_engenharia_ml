@@ -6,7 +6,7 @@ def create_pipeline(**kwargs) -> Pipeline:
         node(
             func=aplicar_modelo_prod,
             inputs={
-                "model_path": "best_model",
+                "model_path": "decisionTree",
                 "df_prod": "prod_shots"
             },
             outputs="df_predito",

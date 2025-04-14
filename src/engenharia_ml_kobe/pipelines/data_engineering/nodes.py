@@ -27,7 +27,9 @@ def preprocess_data(df: pd.DataFrame, is_prod=False) -> pd.DataFrame:
 
     with mlflow.start_run(run_name=run_name):
         filename = (
-           "data/processed/data_filtered.parquet"
+            "data/processed/data_filtered_prod.parquet"
+            if is_prod
+            else "data/processed/data_filtered.parquet"
         )
 
         os.makedirs(os.path.dirname(filename), exist_ok=True)

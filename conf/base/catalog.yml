@@ -14,6 +14,11 @@ best_model:
   type: pickle.PickleDataset
   filepath: data/06_models/best_classifier.pkl
 
+decisionTree:
+  type: pickle.PickleDataset
+  filepath: data/06_models/decisionTree.pkl
+
+
 logistic_model:
   type: pickle.PickleDataset
   filepath: data/06_models/logistic_model.pkl
