@@ -28,7 +28,7 @@ with KedroSession.create(project_path=project_path) as session:
     catalog = context.catalog
 
     # Carrega modelo e dados
-    model = catalog.load("decisionTree")
+    model = catalog.load("logistic_model")
 
     st.title("🏀 Preditor de Arremessos do Kobe - Entrada Manual")
 

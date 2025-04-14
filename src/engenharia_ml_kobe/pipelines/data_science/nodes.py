@@ -399,7 +399,7 @@ def train_decision_tree_model(data: pd.DataFrame, session_id: int, cv_folds: int
         y_test = pred["shot_made_flag"]
         y_pred_label = pred["prediction_label"]
         y_pred_proba = pred["prediction_score"]
-
+        plot_previsoes_modelo('dt',pred)
         logloss = log_loss(y_test, y_pred_proba)
         f1 = f1_score(y_test, y_pred_label)
 

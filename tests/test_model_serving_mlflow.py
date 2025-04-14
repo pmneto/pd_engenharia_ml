@@ -2,7 +2,7 @@ import requests
 import json
 import pandas as pd
 
-url = "http://127.0.0.1:5001/invocations"
+url = "http://127.0.0.1:1234/invocations"
 
 
 headers = {
@@ -11,7 +11,7 @@ headers = {
 
 df_input = pd.DataFrame([{
     "lat": 34.02,
-    "lon": -118.25,
+    "lng": -118.25,
     "period": 2,
     "minutes_remaining": 5,
     "shot_distance": 15,
